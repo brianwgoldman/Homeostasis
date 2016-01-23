@@ -1,0 +1,7 @@
+# I'm not sure how best to handle stress, made it feedback on itself
+Stress | Stress |
+CRH | Stress | CORT
+ACTH | CRH | GRD # Comment in the text
+CORT | ACTH |
+GRD | CORT GR |
+GR | GRD |

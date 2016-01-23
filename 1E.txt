@@ -1,0 +1,16 @@
+Stress | Stress |
+CRH | Stress T1Cyt IIR EST | CORT
+ACTH | CRH T1Cyt IIR EST | GRD
+CORT | ACTH T1Cyt IIR EST |
+GRD | GR CORT |
+GR | GRD |
+ICell | IIR T1Cyt | T2Cyt CORT
+IIR | ICell | 
+T1Cell | IIR T1Cyt | EST T2Cyt # New Version
+#T1Cell | IIR | CORT EST T2Cyt # Old Version
+T1Cyt | T1Cell ICell |
+T2Cell | T2Cyt | T1Cyt
+T2Cyt | T2Cell |
+GnRH | | CORT EST T1Cyt
+LH/FSH | GnRH | CORT EST T1Cyt
+EST | LH/FSH | CORT
