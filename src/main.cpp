@@ -41,7 +41,7 @@ int main(int argc, char * argv[]) {
   }
   string problem_file = argv[1];
   string output_file = argv[2];
-  // TODO Timing
+
   auto start = std::chrono::steady_clock::now();
   Model model(problem_file);
   Enumeration enumerate(model);

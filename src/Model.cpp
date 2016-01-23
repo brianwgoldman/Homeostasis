@@ -11,8 +11,6 @@ using std::max_element;
 #include <sstream>
 #include <exception>
 using std::invalid_argument;
-// TODO Remove
-using std::cout; using std::endl;
 
 STATE Interaction::get_next_state(const vector<STATE>& current_states) const {
   vector<STATE> activator_states;
@@ -80,7 +78,10 @@ Model::Model(string filename) {
     while (iss >> word and word != "|") {
       interaction.inhibitor_names.push_back(word);
     }
-    // TODO check that iss is empty
+    // check that iss is empty
+    if (iss >> word) {
+      throw invalid_argument("Bad input file had too many '|' symbols on line " + interaction.target_name);
+    }
     // Add it to the list of interactions
     interactions.push_back(interaction);
   }
@@ -92,7 +93,6 @@ Model::Model(string filename) {
     auto name = interactions[i].target_name;
     original_ordering[i] = name;
     position_to_name[i] = name;
-    // TODO Ensure no duplicate names here
     auto result = name_to_position.insert({name, i});
     if (not result.second) {
       throw invalid_argument("Input file had two lines for the same target: " + name);
@@ -124,7 +124,8 @@ Model::Model(string filename) {
     interaction.minimum_dependency = min_dep;
   }
 
-  cout << "Unique names: " << name_to_position.size() << " interactions: " << interactions.size() << endl;
+  std::cout << "Unique names: " << name_to_position.size()
+            << " interactions: " << interactions.size() << std::endl;
 }
 
 void Model::print_header(std::ostream& out) const {

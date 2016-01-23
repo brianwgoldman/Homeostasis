@@ -8,10 +8,8 @@
 #include "Enumeration.h"
 #include <algorithm>
 
-// TODO Remove
 using std::cout;
 using std::endl;
-#include <unordered_set>
 
 
 Enumeration::Enumeration(const Model & model_)
@@ -31,17 +29,6 @@ Enumeration::Enumeration(const Model & model_)
     }
     // A target changing effects itself
     affects_of[interaction.target].insert(interaction.target);
-  }
-  // Verify nothing went horribly wrong:
-  for (const auto & affects : affects_of) {
-    std::unordered_set<size_t> unique(affects.begin(), affects.end());
-    if (unique.size() != affects.size()) {
-      for (const auto a : affects) {
-        cout << a << ", ";
-      }
-      cout << endl;
-      throw std::invalid_argument("Duplicated affects");
-    }
   }
 }
 
@@ -135,25 +122,7 @@ void Enumeration::enumerate(std::ostream& out) {
       cout << "Count: " << count << endl;
       return;
     }
-    /*
-    // TODO This is assert checking
-    auto prev = index_needs_change;
-    auto prev_targ = target_needs_change;
-    rebuild_changes_needed();
-    if (index_needs_change != prev or prev_targ != target_needs_change) {
-      cout << "Bad shit happened" << endl;
-      for (size_t i=0; i < length; i++) {
-        cout << index_needs_change[i] - prev[i] << " ";
-      }
-      cout << endl;
-      for (size_t i=0; i < length; i++) {
-        if (target_needs_change[i] != prev_targ[i]) {
-          cout << "Bad target: " << i << endl;
-        }
-      }
-      throw std::invalid_argument("Well shit");
-    }
-    */
+
     // Everything below here is just for screen output purposes
     if (index >= milestone) {
       milestone = index + 1;
