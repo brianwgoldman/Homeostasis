@@ -28,8 +28,8 @@ class Enumeration {
   size_t length;
   vector<std::unordered_set<size_t>> affects_of;
 
-  vector<STATE> reference;
-  void make_move(size_t index, STATE newstate);
+  vector<int> reference;
+  void make_move(size_t index, int newstate);
   size_t increment(size_t index);
   // Tracks how many interactions with "index" as its minimum dependency
   // currently require a change

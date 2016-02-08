@@ -16,7 +16,6 @@ using std::string;
 using std::unordered_map;
 #include <fstream>
 
-enum STATE { INHIBITED, NOMINAL, ACTIVATED };
 
 struct Interaction {
   size_t target;
@@ -28,7 +27,7 @@ struct Interaction {
   string target_name;
   vector<string> activator_names;
   vector<string> inhibitor_names;
-  STATE get_next_state(const vector<STATE>& current_states) const;
+  int get_next_state(const vector<int>& current_states) const;
 };
 
 class Model {
@@ -38,17 +37,23 @@ class Model {
   const vector<Interaction>& get_interactions() const {
     return interactions;
   }
+  const vector<std::pair<int, int>>& get_bounds() const {
+    return bounds;
+  }
+  vector<int> get_next(const vector<int>& current_states) const;
   const size_t size() const {
     return interactions.size();
   }
-  void print(const vector<STATE>& current_state, std::ostream& out=std::cout) const;
+  void print(const vector<int>& current_state, std::ostream& out=std::cout) const;
   void print_header(std::ostream& out=std::cout) const;
  private:
   vector<Interaction> interactions;
+  vector<std::pair<int, int>> bounds;
 
-  void reorganize() {
-    std::cout << "TODO: Implement reorganizing" << std::endl;
-  }
+  void load_old_format(const string filename);
+  void load_csv(const string filename);
+
+  void reorganize();
 
   // Tools for converting in and out of readable formats
   unordered_map<string, size_t> name_to_position;

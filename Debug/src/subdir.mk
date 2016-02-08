@@ -4,16 +4,19 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/Cycles.cpp \
 ../src/Enumeration.cpp \
 ../src/Model.cpp \
 ../src/main.cpp 
 
 OBJS += \
+./src/Cycles.o \
 ./src/Enumeration.o \
 ./src/Model.o \
 ./src/main.o 
 
 CPP_DEPS += \
+./src/Cycles.d \
 ./src/Enumeration.d \
 ./src/Model.d \
 ./src/main.d 

@@ -32,7 +32,7 @@ Enumeration::Enumeration(const Model & model_)
   }
 }
 
-void Enumeration::make_move(size_t index, STATE newstate) {
+void Enumeration::make_move(size_t index, int newstate) {
   reference[index] = newstate;
   for (const auto affected : affects_of[index]) {
     const auto & interaction = model.get_interactions()[affected];
@@ -40,7 +40,7 @@ void Enumeration::make_move(size_t index, STATE newstate) {
       std::invalid_argument("Index mismatch between target and interaction number");
     }
     // check to see if the interaction is stable
-    STATE desired = interaction.get_next_state(reference);
+    int desired = interaction.get_next_state(reference);
     int needs_change = desired != reference[affected];
 
     // 4 states:
@@ -56,20 +56,18 @@ void Enumeration::make_move(size_t index, STATE newstate) {
 }
 
 size_t Enumeration::increment(size_t index) {
+  const auto & bounds = model.get_bounds();
   // Perform carry operations
-  while (reference[index] == ACTIVATED) {
-    make_move(index, INHIBITED);
+  while (reference[index] == bounds[index].second) {
+    // reduce it from maximum to minimum
+    make_move(index, bounds[index].first);
     index++;
     if (index >= length) {
       return index;
     }
   }
-
-  if (reference[index] == INHIBITED) {
-    make_move(index, NOMINAL);
-  } else {
-    make_move(index, ACTIVATED);
-  }
+  // advance by 1
+  make_move(index, reference[index] + 1);
   return index;
 }
 
@@ -79,7 +77,7 @@ void Enumeration::rebuild_changes_needed() {
   target_needs_change.assign(length, 0);
   total_changes_needed = 0;
   for (const auto& interaction : model.get_interactions()) {
-    STATE desired = interaction.get_next_state(reference);
+    int desired = interaction.get_next_state(reference);
     int needs_change = desired != reference[interaction.target];
     index_needs_change[interaction.minimum_dependency] += needs_change;
     target_needs_change[interaction.target] += needs_change;
@@ -89,7 +87,11 @@ void Enumeration::rebuild_changes_needed() {
 
 void Enumeration::enumerate(std::ostream& out) {
   // start from all 0s
-  reference.assign(length, INHIBITED);
+  reference.resize(length);
+  for (size_t i=0; i < length; i++) {
+    // set it to the minimum bound
+    reference[i] = model.get_bounds()[i].first;
+  }
   rebuild_changes_needed();
 
   // tracks how many local optima are found
@@ -130,8 +132,8 @@ void Enumeration::enumerate(std::ostream& out) {
       cout.flush();
       if (milestone > length - pass) {
         milestone = 0;
-        pass++;
         cout << endl << "Pass " << pass << ": ";
+        pass++;
       }
     }
   }
