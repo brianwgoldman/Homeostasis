@@ -63,6 +63,35 @@ vector<int> Model::get_next(const vector<int>& current_states) const {
   return result;
 }
 
+vector<vector<int>> Model::get_async_next_states(const vector<int>& current_states) const {
+  vector<vector<int>> result;
+  for (const auto & interaction : interactions) {
+    int next_state = interaction.get_next_state(current_states);
+    int current = current_states[interaction.target];
+    // This handles the "gradual change" idea
+    if (current < next_state) {
+      next_state = current + 1;
+    } else if (current > next_state) {
+      next_state = current - 1;
+    }
+    if (next_state != current) {
+      result.push_back(current_states);
+      result.back()[interaction.target] = next_state;
+    }
+  }
+  return result;
+}
+
+vector<int> Model::random_states(Random& random) const {
+  vector<int> result(interactions.size(), 0);
+  for (size_t i=0; i < interactions.size(); i++) {
+    const auto & interaction = interactions[i];
+    // generate a random number within the bounds
+    std::uniform_int_distribution<int> dist(interaction.lower_bound, interaction.upper_bound);
+    result[i] = dist(random);
+  }
+  return result;
+}
 
 // TODO Remove
 using std::cout;
@@ -72,7 +101,7 @@ Model::Model(string filename) {
     cout << "Loading CSV" << endl;
     load_csv(filename);
   } else {
-    load_old_format(filename);
+    load_post_format(filename);
   }
 
   position_to_name.resize(interactions.size());
@@ -121,10 +150,64 @@ Model::Model(string filename) {
     }
   }
 
-  // TODO do this for real
-  bounds.assign(interactions.size(), {-1, 1});
   std::cout << "Unique names: " << name_to_position.size()
             << " interactions: " << interactions.size() << std::endl;
+}
+
+void Model::load_post_format(const string filename) {
+  std::ifstream input(filename);
+  string line;
+  string word;
+  int value;
+
+  // TODO actually use the title line to set the variable names
+  getline(input, line);
+  getline(input, line);
+  vector<int> settings, minimums;
+  std::istringstream iss(line);
+
+  while (iss >> value) {
+    settings.push_back(value);
+  }
+  getline(input, line);
+  iss.clear();
+  iss.str(line);
+  while (iss >> value) {
+    minimums.push_back(value);
+  }
+  if (settings.size() != minimums.size()) {
+    throw invalid_argument("Input file had mismatched ranges and minimums");
+  }
+  size_t index = 0;
+  // For the rest of the lines
+  while (getline(input, line)) {
+    std::istringstream iss(line);
+    Interaction interaction;
+    iss >> interaction.target_name;
+    // ignore the =
+    iss >> word;
+    if (word != "=") {
+      throw invalid_argument("Input file missing = after interaction name");
+    }
+    string behavior;
+    while (iss >> word >> behavior) {
+      if (behavior == "PROMOTES") {
+        interaction.activator_names.push_back(word);
+      } else if (behavior == "INHIBITS") {
+        interaction.inhibitor_names.push_back(word);
+      } else {
+        throw invalid_argument("Input file bad behavior for " + interaction.target_name + " of " + behavior);
+      }
+    }
+    if (index >= minimums.size()) {
+      throw invalid_argument("Input file had more interactions than bounds information");
+    }
+    interaction.lower_bound = minimums[index];
+    interaction.upper_bound = minimums[index] + settings[index] - 1;
+    //cout << "Lower: " << interaction.lower_bound << " Upper: " << interaction.upper_bound << endl;
+    interactions.push_back(interaction);
+    index++;
+  }
 }
 
 void Model::load_old_format(const string filename) {
@@ -161,6 +244,9 @@ void Model::load_old_format(const string filename) {
     if (iss >> word) {
       throw invalid_argument("Bad input file had too many '|' symbols on line " + interaction.target_name);
     }
+    // TODO do this for real
+    interaction.lower_bound = -1;
+    interaction.upper_bound = 1;
     // Add it to the list of interactions
     interactions.push_back(interaction);
   }
@@ -170,7 +256,7 @@ void Model::load_csv(const string filename) {
   std::ifstream input(filename);
   string line;
   int relationship;
-  size_t target = 0;
+  size_t row = 0;
   char clear_comma;
   while (getline(input, line)) {
     // Remove everything after the #
@@ -180,23 +266,45 @@ void Model::load_csv(const string filename) {
     if (line.size() == 0) {
       continue;
     }
+    // Create a new interaction
     Interaction interaction;
-    interaction.target_name = to_string(target);
-    target++;
+    interaction.target_name = to_string(row);
+    // TODO do this for real
+    interaction.lower_bound = -1;
+    interaction.upper_bound = 1;
+    row++;
+
     std::istringstream iss(line);
-    int index = 0;
+    size_t col = 0;
     while (iss >> relationship) {
       if (relationship == 1) {
-        interaction.activator_names.push_back(to_string(index));
+        interaction.activator_names.push_back(to_string(col));
       } else if (relationship == -1) {
-        interaction.inhibitor_names.push_back(to_string(index));
+        interaction.inhibitor_names.push_back(to_string(col));
       }
-      index++;
+      col++;
       iss >> clear_comma;
     }
-    // Add it to the list of interactions
     interactions.push_back(interaction);
   }
+  for (auto & i : interactions) {
+    if (i.activator_names.empty() and i.inhibitor_names.empty()) {
+      i.lower_bound = 0;
+      i.upper_bound = 0;
+    }
+  }
+  /*
+  for (const auto & i : interactions) {
+    cout << i.target_name << " = ";
+    for (const auto & a : i.activator_names) {
+      cout << a << " PROMOTES ";
+    }
+    for (const auto & a : i.inhibitor_names) {
+      cout << a << " INHIBITS ";
+    }
+    cout << endl;
+  }
+  //*/
 }
 #include <unordered_set>
 using std::unordered_set;

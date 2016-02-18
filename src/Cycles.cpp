@@ -14,9 +14,9 @@ Cycles::Cycles(const Model& model_) : model(model_) {
 
 bool Cycles::increment(vector<int> & current) const {
   size_t index = 0;
-  const auto & bounds = model.get_bounds();
-  while (current[index] == bounds[index].second) {
-    current[index] = bounds[index].first;
+  const auto & interactions = model.get_interactions();
+  while (current[index] == interactions[index].upper_bound) {
+    current[index] = interactions[index].lower_bound;
     index++;
     if (index >= current.size()) {
       return false;
@@ -44,8 +44,8 @@ void Cycles::find_cycles(std::ostream& out) {
   std::unordered_set<vector<int>> known_cycle;
 
   vector<int> counter;
-  for (const auto bound : model.get_bounds()) {
-    counter.push_back(bound.first);
+  for (const auto interaction : model.get_interactions()) {
+    counter.push_back(interaction.lower_bound);
   }
   do {
     // If you have seen this step before, skip it

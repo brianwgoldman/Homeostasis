@@ -56,11 +56,11 @@ void Enumeration::make_move(size_t index, int newstate) {
 }
 
 size_t Enumeration::increment(size_t index) {
-  const auto & bounds = model.get_bounds();
+  const auto & interactions = model.get_interactions();
   // Perform carry operations
-  while (reference[index] == bounds[index].second) {
+  while (reference[index] == interactions[index].upper_bound) {
     // reduce it from maximum to minimum
-    make_move(index, bounds[index].first);
+    make_move(index, interactions[index].lower_bound);
     index++;
     if (index >= length) {
       return index;
@@ -86,11 +86,11 @@ void Enumeration::rebuild_changes_needed() {
 }
 
 void Enumeration::enumerate(std::ostream& out) {
-  // start from all 0s
+  // start from minimum bound
   reference.resize(length);
   for (size_t i=0; i < length; i++) {
     // set it to the minimum bound
-    reference[i] = model.get_bounds()[i].first;
+    reference[i] = model.get_interactions()[i].lower_bound;
   }
   rebuild_changes_needed();
 

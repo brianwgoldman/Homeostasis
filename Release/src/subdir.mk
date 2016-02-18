@@ -7,18 +7,21 @@ CPP_SRCS += \
 ../src/Cycles.cpp \
 ../src/Enumeration.cpp \
 ../src/Model.cpp \
+../src/MonteCarloCycles.cpp \
 ../src/main.cpp 
 
 OBJS += \
 ./src/Cycles.o \
 ./src/Enumeration.o \
 ./src/Model.o \
+./src/MonteCarloCycles.o \
 ./src/main.o 
 
 CPP_DEPS += \
 ./src/Cycles.d \
 ./src/Enumeration.d \
 ./src/Model.d \
+./src/MonteCarloCycles.d \
 ./src/main.d 
 
 

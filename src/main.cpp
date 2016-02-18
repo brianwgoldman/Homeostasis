@@ -23,6 +23,7 @@
 #include "Model.h"
 #include "Enumeration.h"
 #include "Cycles.h"
+#include "MonteCarloCycles.h"
 
 #include <iostream>
 using namespace std;

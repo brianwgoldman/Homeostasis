@@ -16,12 +16,16 @@ using std::string;
 using std::unordered_map;
 #include <fstream>
 
+#include <random>
+using Random=std::mt19937;
 
 struct Interaction {
   size_t target;
   vector<size_t> activators;
   vector<size_t> inhibitors;
   size_t minimum_dependency;
+  int lower_bound;
+  int upper_bound;
 
 
   string target_name;
@@ -37,10 +41,9 @@ class Model {
   const vector<Interaction>& get_interactions() const {
     return interactions;
   }
-  const vector<std::pair<int, int>>& get_bounds() const {
-    return bounds;
-  }
+  vector<int> random_states(Random& random) const;
   vector<int> get_next(const vector<int>& current_states) const;
+  vector<vector<int>> get_async_next_states(const vector<int>& current_states) const;
   const size_t size() const {
     return interactions.size();
   }
@@ -48,10 +51,10 @@ class Model {
   void print_header(std::ostream& out=std::cout) const;
  private:
   vector<Interaction> interactions;
-  vector<std::pair<int, int>> bounds;
 
   void load_old_format(const string filename);
   void load_csv(const string filename);
+  void load_post_format(const string filename);
 
   void reorganize();
 
@@ -60,5 +63,38 @@ class Model {
   vector<string> position_to_name;
   vector<string> original_ordering;
 };
+
+
+// TODO Move this stuff somwhere better
+
+// This is taken from Boost to allow for hashing of vector<int>
+template <class T>
+inline void hash_combine(std::size_t & seed, const T & v) {
+  std::hash<T> hasher;
+  seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+}
+
+namespace std {
+/*
+template<typename S, typename T> struct hash<pair<S, T>> {
+    inline size_t operator()(const pair<S, T> & v) const {
+      size_t seed = 0;
+      hash_combine(seed, v.first);
+      hash_combine(seed, v.second);
+      return seed;
+    }
+  };
+*/
+  template<typename T> struct hash<vector<T>> {
+    inline size_t operator()(const vector<T> & v) const {
+      size_t seed = 0;
+      for (const auto & elem : v) {
+        hash_combine(seed, elem);
+      }
+      return seed;
+    }
+  };
+}
+
 
 #endif /* MODEL_H_ */
