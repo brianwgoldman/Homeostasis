@@ -24,6 +24,9 @@ int Interaction::get_next_state(const vector<int>& current_states) const {
   }
   // Line 2 in Equation 2
   if (inhibitors.size() == 0) {
+    if (activators.size() == 0) {
+      return current_states[target];
+    }
     return *std::max_element(activator_states.begin(), activator_states.end());
 
   // Line 3 in Equation 2
@@ -204,7 +207,6 @@ void Model::load_post_format(const string filename) {
     }
     interaction.lower_bound = minimums[index];
     interaction.upper_bound = minimums[index] + settings[index] - 1;
-    //cout << "Lower: " << interaction.lower_bound << " Upper: " << interaction.upper_bound << endl;
     interactions.push_back(interaction);
     index++;
   }

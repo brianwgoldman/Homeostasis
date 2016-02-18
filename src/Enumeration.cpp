@@ -97,14 +97,12 @@ void Enumeration::enumerate(std::ostream& out) {
   // tracks how many local optima are found
   size_t count = 0;
 
-  // Used to output progress to the screen
-  int pass = 1;
-  size_t milestone = 0;
-  cout << "Pass " << pass << ": ";
   model.print_header(out);
 
   size_t index = length - 1;
+  size_t iterations = 0;
   while (true) {
+    iterations++;
     // If a local optima has been found, output it
     if (total_changes_needed == 0) {
       model.print(reference, out);
@@ -126,15 +124,16 @@ void Enumeration::enumerate(std::ostream& out) {
     }
 
     // Everything below here is just for screen output purposes
-    if (index >= milestone) {
-      milestone = index + 1;
-      cout << index << ", ";
-      cout.flush();
-      if (milestone > length - pass) {
-        milestone = 0;
-        cout << endl << "Pass " << pass << ": ";
-        pass++;
+    if (iterations % 500000 == 0) {
+      size_t start = 0;
+      if (reference.size() > 150) {
+        start = reference.size() - 150;
       }
+      string magic = "-*#";
+      for (size_t i=start; i < reference.size(); i++) {
+        cout << magic[reference[i]+1];
+      }
+      cout << endl;
     }
   }
 }

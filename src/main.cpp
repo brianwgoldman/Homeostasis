@@ -34,7 +34,7 @@ int main(int argc, char * argv[]) {
   if (argc < 3) {
     // Help message
     cout
-        << "Usage: input_filename output_filename" << endl
+        << "Usage: input_filename output_filename [tool]" << endl
         << endl
         << "Example: Release/run input.txt output.txt" << endl
         << "         This will read a problem from input.txt, write local optima to output.txt"
@@ -43,13 +43,37 @@ int main(int argc, char * argv[]) {
   }
   string problem_file = argv[1];
   string output_file = argv[2];
+  int option = 0;
+  if (argc > 3) {
+    option = atoi(argv[3]);
+  }
 
   auto start = std::chrono::steady_clock::now();
   Model model(problem_file);
-  Enumeration enumerate(model);
   ofstream out(output_file);
-  enumerate.enumerate(out);
+  if (option == 0) {
+    Enumeration enumerate(model);
+
+    enumerate.enumerate(out);
+  } else if (option == 1) {
+    Cycles cycle_finder(model);
+    cycle_finder.find_cycles(out);
+  } else if (option == 2) {
+    Random random;
+    MonteCarloCycles cycle_finder(model, random, 500000);
+    for (int i=0; i < 1000000; i++) {
+      if (i % 1000 == 0) {
+        cout << "Starting iteration: " << i << endl;
+      }
+      cycle_finder.iterate();
+    }
+    cycle_finder.print(out);
+  } else {
+    cout << "Bad option!" << endl;
+  }
   auto end = std::chrono::steady_clock::now();
-  cout << "Done. Total Seconds: " << std::chrono::duration<double>(end - start).count() << endl;
+  double seconds = std::chrono::duration<double>(end - start).count();
+  out << "# Seconds: " << seconds << endl;
+  cout << "Done. Total Seconds: " << seconds << endl;
   return 0;
 }
