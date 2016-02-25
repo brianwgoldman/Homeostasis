@@ -24,6 +24,7 @@
 #include "Enumeration.h"
 #include "Cycles.h"
 #include "MonteCarloCycles.h"
+#include "WalkCycle.h"
 
 #include <iostream>
 using namespace std;
@@ -68,7 +69,19 @@ int main(int argc, char * argv[]) {
       cycle_finder.iterate();
     }
     cycle_finder.print(out);
-  } else {
+  } else if (option == 3) {
+
+    Random random;
+    random.seed(std::random_device()());
+    WalkCycle cycle_finder(model, random, 500000);
+    for (int i=0; i < 4000000; i++) {
+      if (i % 1000 == 0) {
+        cout << "Starting iteration: " << i << endl;
+      }
+      cycle_finder.iterate();
+    }
+    cycle_finder.print(out);
+  }else {
     cout << "Bad option!" << endl;
   }
   auto end = std::chrono::steady_clock::now();

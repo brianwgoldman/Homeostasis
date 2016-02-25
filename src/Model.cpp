@@ -389,6 +389,14 @@ void Model::reorganize() {
   }
 }
 
+size_t Model::find_position(const string& name) const {
+  auto result = name_to_position.find(name);
+  if (result == name_to_position.end()) {
+    return -1;
+  }
+  return result->second;
+}
+
 void Model::print_header(std::ostream& out) const {
   for (const auto & column : original_ordering) {
     out << column << " ";
