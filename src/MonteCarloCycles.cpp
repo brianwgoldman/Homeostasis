@@ -35,6 +35,8 @@ struct tarjan_container {
   }
 };
 
+#include <unordered_set>
+
 bool MonteCarloCycles::tarjan(const vector<int>& start_state) {
   unordered_map<vector<int>, size_t> state_to_index;
   vector<tarjan_container> state_stack;

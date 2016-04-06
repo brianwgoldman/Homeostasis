@@ -31,6 +31,14 @@ using namespace std;
 #include <cassert>
 #include <fstream>
 
+ostream& print_tight(const vector<int>& states, ostream& out) {
+  vector<char> lookup = {'I', 'N', 'A'};
+  for (const auto v : states) {
+    out << lookup[v+1];
+  }
+  return out;
+}
+
 int main(int argc, char * argv[]) {
   if (argc < 3) {
     // Help message
@@ -74,14 +82,37 @@ int main(int argc, char * argv[]) {
     Random random;
     random.seed(std::random_device()());
     WalkCycle cycle_finder(model, random, 500000);
-    for (int i=0; i < 4000000; i++) {
+    for (int i=0; i < 1000000; i++) {
       if (i % 1000 == 0) {
         cout << "Starting iteration: " << i << endl;
       }
       cycle_finder.iterate();
     }
     cycle_finder.print(out);
-  }else {
+  } else if (option == 4) {
+    // Make a graph viz file
+    ifstream in(argv[4]);
+    out << "digraph test {" << endl;
+    out << "overlap=scalexy" << endl;
+    string line;
+    unordered_set<vector<int>> starts, ends;
+    while (getline(in, line)) {
+      if (line[0] != 'N') {
+        continue;
+      }
+      vector<int> states = model.load_state(line);
+      starts.insert(states);
+      for (const auto & neighbor : model.get_async_next_states(states)) {
+        ends.insert(neighbor);
+        model.print_tight(states, out);
+        out << " -> ";
+        model.print_tight(neighbor, out);
+        out << ";" << endl;
+      }
+    }
+    out << "}" << endl;
+    cout << starts.size() << " " << ends.size() << endl;
+  } else {
     cout << "Bad option!" << endl;
   }
   auto end = std::chrono::steady_clock::now();

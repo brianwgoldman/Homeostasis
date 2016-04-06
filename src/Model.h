@@ -48,7 +48,9 @@ class Model {
     return interactions.size();
   }
   void print(const vector<int>& current_state, std::ostream& out=std::cout) const;
+  void print_tight(const vector<int>& current_state, std::ostream& out=std::cout) const;
   void print_header(std::ostream& out=std::cout) const;
+  vector<int> load_state(string line) const;
   size_t find_position(const string& name) const;
  private:
   vector<Interaction> interactions;

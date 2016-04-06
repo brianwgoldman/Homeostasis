@@ -414,3 +414,25 @@ void Model::print(const vector<int>& current_state, std::ostream& out) const {
   }
   out << std::endl;
 }
+
+void Model::print_tight(const vector<int>& current_state, std::ostream& out) const {
+  // TODO update this if range increases
+  const string lookup = "INA";
+  for (size_t i=0; i < current_state.size(); i++) {
+    string column = original_ordering[i];
+    int value = current_state[name_to_position.at(column)];
+    out << lookup[value + 1];
+  }
+}
+
+vector<int> Model::load_state(string line) const {
+  vector<int> result(size(), 0);
+  unordered_map<char, int> lookup = {{'N', 0}, {'A', 1}, {'I', -1}};
+  for (size_t column=0; column < result.size(); column++) {
+    int value = lookup.at(line[column * 2]);
+    int position = name_to_position.at(original_ordering[column]);
+    result[position] = value;
+  }
+
+  return result;
+}

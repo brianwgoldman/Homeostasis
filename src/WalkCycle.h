@@ -27,9 +27,16 @@ class WalkCycle {
   // where each state is a vector of ints.
   vector<vector<vector<int>>> cycles;
   vector<vector<int>> walk_until_cycle(const vector<int>& start);
-  unordered_map<vector<int>, size_t> starts, successes;
-  unordered_set<vector<int>> known_cyclic;
-  vector<vector<int>> selectable;
+  //unordered_map<vector<int>, size_t> starts, successes;
+  //unordered_set<vector<int>> known_cyclic;
+  //vector<vector<int>> selectable;
+
+
+  vector<vector<int>> needs_grind;
+  vector<size_t> grind_count;
+  unordered_map<vector<int>, size_t> seen_count;
+  void record_edges(vector<vector<int>> & cycle);
+  unordered_map<vector<int>, unordered_map<vector<int>, size_t>> edge_frequency;
 
   bool cort_cycle_check(const vector<vector<int>> & cycle) const;
 };
