@@ -12,6 +12,11 @@ using std::max_element;
 #include <exception>
 using std::invalid_argument;
 using std::to_string;
+#include <unordered_set>
+using std::unordered_set;
+#include <cassert>
+#include <sstream>
+using std::istringstream;
 
 int Interaction::get_next_state(const vector<int>& current_states) const {
   vector<int> activator_states;
@@ -81,6 +86,56 @@ vector<vector<int>> Model::get_async_next_states(const vector<int>& current_stat
       result.push_back(current_states);
       result.back()[interaction.target] = next_state;
     }
+  }
+  return result;
+}
+
+vector<vector<int>> Model::get_clock_next_states(const vector<int>& current_states) const {
+  // This is the brain
+  unordered_set<string> brain = {"LH/FSH", "ACTH", "GnRH", "CRH"};
+
+  // Find the CLOCK
+  size_t clock=interactions.size();
+  bool brain_phase = false;
+  for (const auto& interaction: interactions) {
+    if (interaction.target_name == "CLOCK") {
+      clock = interaction.target;
+      brain_phase = current_states[clock] > 0;
+    }
+  }
+  assert(clock < interactions.size());
+  vector<vector<int>> result;
+  bool off_phase_update = false;
+  for (const auto & interaction : interactions) {
+    if (interaction.target_name == "CLOCK") {
+      // If this is the clock, skip it
+      continue;
+    }
+    bool is_brain = brain.count(interaction.target_name) == 1;
+    int next_state = interaction.get_next_state(current_states);
+    int current = current_states[interaction.target];
+    // This handles the "gradual change" idea
+    if (current < next_state) {
+      next_state = current + 1;
+    } else if (current > next_state) {
+      next_state = current - 1;
+    }
+    if (next_state != current) {
+      if (brain_phase == is_brain) {
+        // If this update is "on phase", create the resulting state
+        result.push_back(current_states);
+        result.back()[interaction.target] = next_state;
+      } else {
+        // This update is "off phase", e.g. its currently blood's turn
+        // but the brain wants to update.
+        off_phase_update = true;
+      }
+    }
+  }
+  if (off_phase_update and result.size() == 0) {
+    // Advance the clock because we know eventually there will be an update
+    result.push_back(current_states);
+    result.back()[clock] = not brain_phase;
   }
   return result;
 }
@@ -410,7 +465,11 @@ void Model::print(const vector<int>& current_state, std::ostream& out) const {
   for (size_t i=0; i < current_state.size(); i++) {
     string column = original_ordering[i];
     int value = current_state[name_to_position.at(column)];
-    out << lookup[value + 1] << " ";
+    if (column == "CLOCK") {
+      out << value << " ";
+    } else {
+      out << lookup[value + 1] << " ";
+    }
   }
   out << std::endl;
 }
@@ -421,16 +480,29 @@ void Model::print_tight(const vector<int>& current_state, std::ostream& out) con
   for (size_t i=0; i < current_state.size(); i++) {
     string column = original_ordering[i];
     int value = current_state[name_to_position.at(column)];
-    out << lookup[value + 1];
+    if (column == "CLOCK") {
+      out << value - interactions[i].lower_bound;
+    } else {
+      out << lookup[value + 1];
+    }
   }
 }
 
 vector<int> Model::load_state(string line) const {
   vector<int> result(size(), 0);
-  unordered_map<char, int> lookup = {{'N', 0}, {'A', 1}, {'I', -1}};
+  unordered_map<string, int> lookup = {{"N", 0}, {"A", 1}, {"I", -1}};
+  istringstream iss(line);
+  int value;
+  string symbol;
   for (size_t column=0; column < result.size(); column++) {
-    int value = lookup.at(line[column * 2]);
-    int position = name_to_position.at(original_ordering[column]);
+    string name = original_ordering[column];
+    if (name == "CLOCK") {
+      iss >> value;
+    } else {
+      iss >> symbol;
+      value = lookup.at(symbol);
+    }
+    int position = name_to_position.at(name);
     result[position] = value;
   }
 

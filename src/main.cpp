@@ -70,7 +70,7 @@ int main(int argc, char * argv[]) {
   } else if (option == 2) {
     Random random;
     MonteCarloCycles cycle_finder(model, random, 500000);
-    for (int i=0; i < 1000000; i++) {
+    for (int i=0; i < 100000; i++) {
       if (i % 1000 == 0) {
         cout << "Starting iteration: " << i << endl;
       }
@@ -102,7 +102,7 @@ int main(int argc, char * argv[]) {
       }
       vector<int> states = model.load_state(line);
       starts.insert(states);
-      for (const auto & neighbor : model.get_async_next_states(states)) {
+      for (const auto & neighbor : model.get_clock_next_states(states)) {
         ends.insert(neighbor);
         model.print_tight(states, out);
         out << " -> ";

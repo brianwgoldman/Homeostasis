@@ -8,6 +8,7 @@ CPP_SRCS += \
 ../src/Enumeration.cpp \
 ../src/Model.cpp \
 ../src/MonteCarloCycles.cpp \
+../src/WalkCycle.cpp \
 ../src/main.cpp 
 
 OBJS += \
@@ -15,6 +16,7 @@ OBJS += \
 ./src/Enumeration.o \
 ./src/Model.o \
 ./src/MonteCarloCycles.o \
+./src/WalkCycle.o \
 ./src/main.o 
 
 CPP_DEPS += \
@@ -22,6 +24,7 @@ CPP_DEPS += \
 ./src/Enumeration.d \
 ./src/Model.d \
 ./src/MonteCarloCycles.d \
+./src/WalkCycle.d \
 ./src/main.d 
 
 

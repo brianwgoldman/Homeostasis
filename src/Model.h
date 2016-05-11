@@ -44,6 +44,7 @@ class Model {
   vector<int> random_states(Random& random) const;
   vector<int> get_next(const vector<int>& current_states) const;
   vector<vector<int>> get_async_next_states(const vector<int>& current_states) const;
+  vector<vector<int>> get_clock_next_states(const vector<int>& current_states) const;
   const size_t size() const {
     return interactions.size();
   }
