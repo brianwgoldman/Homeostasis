@@ -20,6 +20,8 @@ using std::istringstream;
 
 int Interaction::get_next_state(const vector<int>& current_states) const {
   vector<int> activator_states;
+  // TODO Currently this treats all values > 0 as activated and all values < 0 as inhibited
+  // you should probably allow each variable to control that information.
   for (const auto index : activators) {
     activator_states.push_back(current_states[index]);
   }
@@ -30,6 +32,7 @@ int Interaction::get_next_state(const vector<int>& current_states) const {
   // Line 2 in Equation 2
   if (inhibitors.size() == 0) {
     if (activators.size() == 0) {
+      // If you have neither activators or inhibitors, you just keep your state
       return current_states[target];
     }
     return *std::max_element(activator_states.begin(), activator_states.end());
@@ -44,7 +47,6 @@ int Interaction::get_next_state(const vector<int>& current_states) const {
     auto active_aggregate = *std::max_element(activator_states.begin(), activator_states.end());
     auto inhibit_aggregate = *std::max_element(inhibitor_states.begin(), inhibitor_states.end());
     // Activated is > 0
-    // TODO Update this if range changes
     if (active_aggregate > 0 and inhibit_aggregate <= 0) {
       return active_aggregate;
     } else if (inhibit_aggregate > 0 and active_aggregate <= 0) {
@@ -55,16 +57,28 @@ int Interaction::get_next_state(const vector<int>& current_states) const {
   }
 }
 
-vector<int> Model::get_next(const vector<int>& current_states) const {
+vector<int> Model::get_sync_next(const vector<int>& current_states) const {
   vector<int> result(current_states);
   for (const auto & interaction : interactions) {
-    int next_state = interaction.get_next_state(current_states);
+    int delta = interaction.get_next_state(current_states);
     int current = result[interaction.target];
+    int next_state = current;
     // This handles the "gradual change" idea
-    if (current < next_state) {
-      next_state = current + 1;
-    } else if (current > next_state) {
-      next_state = current - 1;
+    if (delta > 0) {
+      if (current < interaction.upper_bound) {
+        next_state = current+1;
+      }
+    } else if (next_state < 0) {
+      if (current > interaction.lower_bound) {
+        next_state = current-1;
+      }
+    } else {
+      // Neutral falls towards 0
+      if (current > 0) {
+        next_state = current-1;
+      } else if (current < 0) {
+        next_state = current+1;
+      }
     }
     result[interaction.target] = next_state;
   }

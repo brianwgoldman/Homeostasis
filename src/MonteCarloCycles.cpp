@@ -30,8 +30,9 @@ struct tarjan_container {
   vector<int> state;
   tarjan_container() = default;
   tarjan_container(const vector<int> & s, size_t i, const Model& model, Random & random) : index(i), low_link(i), state(s) {
-    unsearched_neighbors = model.get_clock_next_states(state);
-    shuffle(unsearched_neighbors.begin(), unsearched_neighbors.end(), random);
+    //unsearched_neighbors = model.get_clock_next_states(state);
+    unsearched_neighbors.push_back(model.get_sync_next(state));
+    //shuffle(unsearched_neighbors.begin(), unsearched_neighbors.end(), random);
   }
 };
 

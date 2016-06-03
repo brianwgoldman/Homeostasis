@@ -60,7 +60,7 @@ void Cycles::find_cycles(std::ostream& out) {
 
     do {
       // advance the path by 1
-      path.emplace_back(model.get_next(path.back()));
+      path.emplace_back(model.get_sync_next(path.back()));
       end_of_path++;
       auto result = path_position.insert({path.back(), end_of_path});
       // If this state already has a position in our path
