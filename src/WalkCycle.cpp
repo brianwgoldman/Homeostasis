@@ -22,23 +22,15 @@ void WalkCycle::print(std::ostream& out) {
   }
   cout << "Total found: " << cycles.size() << endl;
   out << "# Total found: " << cycles.size() << endl;
-
+  // Everything below here is a hack to print edge frequency
+  // to the screen
   unordered_map<vector<int>, size_t> frequency;
   for (const auto & cycle : cycles) {
     for (const auto & state : cycle) {
       frequency[state]++;
     }
   }
-  /*
-  vector<std::pair<size_t, vector<int>>> sortable;
-  for (const auto & pair : frequency) {
-    if (pair.second > 3) {
-      sortable.emplace_back(pair.second, pair.first);
-    }
-  }
-  */
   vector<std::pair<double, vector<int>>> sortable;
-  //cout << "Successes: " << successes.size() << " edge freq " << edge_frequency.size() << endl;
   for (const auto & pair : seen_count) {
     sortable.emplace_back(pair.second, pair.first);
     if (sortable.back().first < 100) {
@@ -59,18 +51,22 @@ void WalkCycle::print(std::ostream& out) {
 }
 
 bool WalkCycle::cort_cycle_check(const vector<vector<int>> & cycle) const {
+  // Find which position in the state is "CORT"
   size_t cort_position = model.find_position("CORT");
   assert(cort_position < model.size());
 
+  // Build the set of all unique values CORT takes during this cycle
   std::unordered_set<int> cort_values;
   for (const auto & step : cycle) {
     cort_values.insert(step[cort_position]);
   }
+  // If it has at least two values, it cycled
   return cort_values.size() > 1;
 }
 
 void WalkCycle::record_edges(vector<vector<int>> & cycle) {
   for (size_t i=0; i < cycle.size(); i++) {
+    // Look at the transition in this cycle
     auto & from = cycle[i];
     auto & to = cycle[(i+1) % cycle.size()];
     auto freq = edge_frequency.find(from);
@@ -82,6 +78,7 @@ void WalkCycle::record_edges(vector<vector<int>> & cycle) {
       }
       freq = edge_frequency.find(from);
     }
+    // increments edge_frequency[from][to]
     freq->second[to]++;
   }
 }
@@ -92,6 +89,7 @@ void WalkCycle::iterate() {
     // Start from a node that we know needs exploring
     start = needs_grind.back();
     grind_count.back()++;
+    // Stop after 1000 explores
     if (grind_count.back() >= 1000) {
       grind_count.pop_back();
       needs_grind.pop_back();
@@ -101,15 +99,17 @@ void WalkCycle::iterate() {
     start = model.random_states(random);
   }
   auto cycle = walk_until_cycle(start);
+  // If you found a cycle
   if (not cycle.empty()) {
+    // If this cycle results in cort going up and down
     if (cort_cycle_check(cycle)) {
       record_edges(cycle);
-      //cout << "Found cort cycle" << endl;
       cycles.emplace_back(cycle);
       for (const auto & step : cycle) {
         seen_count[step]++;
         // If this is the first time you've seen that node
         if (seen_count[step] == 1) {
+          // You want to restart from here later
           needs_grind.push_back(step);
           grind_count.push_back(0);
         }
@@ -129,7 +129,6 @@ vector<vector<int>> WalkCycle::walk_until_cycle(const vector<int>& start) {
     auto options = model.get_async_next_states(path.back());
     if (options.empty()) {
       // You have reached a steady state, time to bail
-     // cout << "Steady state reached, bailing" << endl;
       return {};
     }
     // pick one at random
@@ -141,7 +140,6 @@ vector<vector<int>> WalkCycle::walk_until_cycle(const vector<int>& start) {
     cout << "Stack Limited" << endl;
     return {};
   }
-  //cout << "Cycle found" << endl;
   // At this point you know path.back() is in path twice. Everything
   // between those points is the cycle
   size_t repeated = path_position[path.back()];

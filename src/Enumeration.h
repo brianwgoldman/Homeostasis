@@ -1,11 +1,8 @@
 // Brian Goldman
 
-// This class is designed to find all local optima
-// of a given MK Landscape. Allows for configuring
-// the r-bit hamming radius of the local optima
-// (how many bit flips are required to reach an improving
-// solution), as well has turning off hyperplane elimination
-// and reordering.
+// This will find all stable states of the model, where a "stable state"
+// is any configuration in which no interaction wants to change.
+// Uses Hyperplane Elimination to perform this very quickly.
 
 #ifndef ENUMERATION_H_
 #define ENUMERATION_H_
@@ -17,26 +14,31 @@
 
 class Enumeration {
  public:
-  // Set up initial information based on the landscape and the
-  // desired hamming ball radius
+  // Set up initial information based on the model
   Enumeration(const Model & model_);
-  // Perform the landscape enumeration, writing all of the local optima to the
-  // "out" stream.
+  // Perform the enumeration, writing all of the steady states
+  // to the "out" stream.
   void enumerate(std::ostream& out);
  protected:
   const Model& model;
   size_t length;
+  // affects_of[X] gives you the set of affected positions when
+  // "X" is changed
   vector<std::unordered_set<size_t>> affects_of;
 
+  // The current settings for all variables
   vector<int> reference;
+  // Modifies reference[index] to be "newstate" and updates auxiliary data structures.
   void make_move(size_t index, int newstate);
+  // Advance index as far as you can go without skipping a potential steady state
   size_t increment(size_t index);
   // Tracks how many interactions with "index" as its minimum dependency
   // currently require a change
   vector<int> index_needs_change;
-
+  // Tracks if a target needs to be changed (always boolean, but int is faster).
   vector<int> target_needs_change;
-  int total_changes_needed=0;
+  // If this value is 0, you are in a steady state
+  int total_changes_needed;
 
   void rebuild_changes_needed();
 };

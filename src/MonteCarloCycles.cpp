@@ -1,17 +1,15 @@
-/*
- * MonteCarloCycles.cpp
- *
- *  Created on: Feb 9, 2016
- *      Author: goldman
- */
+// Brian Goldman
 
+// Find random strongly connected components using sampled Tarjan
 #include "MonteCarloCycles.h"
-#include <algorithm>
 using std::endl;
+#include <unordered_set>
 
 void MonteCarloCycles::print(std::ostream& out) {
   for (size_t i=0; i < cycles.size(); i++) {
+    // Output how many times this cycle was encountered by iteration
     out << cycle_seen[i] << endl;
+    // Output each state of the cycle
     for (const auto & state : cycles[i]) {
       model.print(state, out);
     }
@@ -19,34 +17,25 @@ void MonteCarloCycles::print(std::ostream& out) {
 }
 
 void MonteCarloCycles::iterate() {
-  unordered_map<vector<int>, size_t> state_to_index;
+  // Generate a random start state, then perform tarjan from it.
   tarjan(model.random_states(random));
 }
 
-struct tarjan_container {
-  vector<vector<int>> unsearched_neighbors;
-  size_t index=0;
-  size_t low_link=0;
-  vector<int> state;
-  tarjan_container() = default;
-  tarjan_container(const vector<int> & s, size_t i, const Model& model, Random & random) : index(i), low_link(i), state(s) {
-    //unsearched_neighbors = model.get_clock_next_states(state);
-    unsearched_neighbors.push_back(model.get_sync_next(state));
-    //shuffle(unsearched_neighbors.begin(), unsearched_neighbors.end(), random);
-  }
-};
-
-#include <unordered_set>
 
 bool MonteCarloCycles::tarjan(const vector<int>& start_state) {
-  unordered_map<vector<int>, size_t> state_to_index;
+  // Keeps track of the depth-first-search being performed by tarjan.
   vector<tarjan_container> state_stack;
+  // Allows you to convert a state to its index
+  unordered_map<vector<int>, size_t> state_to_index;
   size_t index = 0;
+  // Initialize the stack with the start state
   state_stack.emplace_back(start_state, index, model, random);
   state_to_index[start_state] = index;
+  // This is used to "recurse" back up one level of the DFS
   vector<size_t> recursion_stack = {index};
   index++;
   while (not recursion_stack.empty()) {
+    // Get the tarjan_container at the top of the current stack
     auto & state = state_stack[recursion_stack.back()];
     // if you have explored all of this thing's links
     if (state.unsearched_neighbors.empty()) {
@@ -59,9 +48,10 @@ bool MonteCarloCycles::tarjan(const vector<int>& start_state) {
         }
         cycles.push_back(cycle);
         if (cycles.back().size() > 1) {
-          std::cout << "It happened! " << cycles.back().size() << endl;
+          std::cout << "Tarjan found a cycle over size 1: " << cycles.back().size() << endl;
         }
         cycle_seen.push_back(1);
+        // Put all of this cycle's states into the map
         for (const auto& s : cycles.back()) {
           state_in_cycle[s] = cycles.size() - 1;
         }
@@ -97,6 +87,8 @@ bool MonteCarloCycles::tarjan(const vector<int>& start_state) {
         std::cout << "Stack size: " << index << endl;
       }
     } else {
+      // If you got here its because you just returned from a "recursion"
+      // and we now need to update state's lowlink based on 'next's lowlink.
       state.low_link = std::min(state.low_link, state_stack[known->second].low_link);
       // Warning, after this line "next" is invalid
       state.unsearched_neighbors.pop_back();

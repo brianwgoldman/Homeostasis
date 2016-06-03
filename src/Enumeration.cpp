@@ -17,7 +17,8 @@ Enumeration::Enumeration(const Model & model_)
       length(model_.size()),
       affects_of(length, std::unordered_set<size_t>()),
       index_needs_change(length, 0),
-      target_needs_change(length, 0){
+      target_needs_change(length, 0),
+      total_changes_needed(0) {
 
   for (const auto & interaction : model.get_interactions()) {
     // Maps activators and inhibitors to the targets they affect
@@ -35,9 +36,10 @@ Enumeration::Enumeration(const Model & model_)
 void Enumeration::make_move(size_t index, int newstate) {
   reference[index] = newstate;
   for (const auto affected : affects_of[index]) {
+    // Get get the interaction that needs to be updated now that "index" has changed
     const auto & interaction = model.get_interactions()[affected];
     if (affected != interaction.target) {
-      std::invalid_argument("Index mismatch between target and interaction number");
+      throw std::invalid_argument("Index mismatch between target and interaction number");
     }
     // check to see if the interaction is stable
     int desired = interaction.get_next_state(reference);
@@ -80,21 +82,20 @@ void Enumeration::rebuild_changes_needed() {
     int desired = interaction.get_next_state(reference);
     int needs_change = desired != reference[interaction.target];
     index_needs_change[interaction.minimum_dependency] += needs_change;
-    target_needs_change[interaction.target] += needs_change;
+    target_needs_change[interaction.target] = needs_change;
     total_changes_needed += needs_change;
   }
 }
 
 void Enumeration::enumerate(std::ostream& out) {
-  // start from minimum bound
+  // start all variables at lower bound
   reference.resize(length);
   for (size_t i=0; i < length; i++) {
-    // set it to the minimum bound
     reference[i] = model.get_interactions()[i].lower_bound;
   }
   rebuild_changes_needed();
 
-  // tracks how many local optima are found
+  // tracks how many stable states are found
   size_t count = 0;
 
   model.print_header(out);
@@ -137,4 +138,3 @@ void Enumeration::enumerate(std::ostream& out) {
     }
   }
 }
-

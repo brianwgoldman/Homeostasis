@@ -1,10 +1,6 @@
-/*
- * Cycles.cpp
- *
- *  Created on: Jan 27, 2016
- *      Author: goldman
- */
+// Brian Goldman
 
+// Brute force find all synchronous update cycles
 #include "Cycles.h"
 #include <unordered_set>
 
@@ -27,6 +23,8 @@ bool Cycles::increment(vector<int> & current) const {
   return true;
 }
 
+// Helper function that returns if left < right in the sense that
+// "left" is visited before "right" by "increment"
 bool less_than(const vector<int> & left, const vector<int>& right) {
   for (int i=left.size() - 1; i >= 0; i--) {
     if (left[i] < right[i]) {
@@ -43,6 +41,7 @@ void Cycles::find_cycles(std::ostream& out) {
 
   std::unordered_set<vector<int>> known_cycle;
 
+  // Initialize the counter to the minimum value
   vector<int> counter;
   for (const auto interaction : model.get_interactions()) {
     counter.push_back(interaction.lower_bound);
@@ -66,13 +65,17 @@ void Cycles::find_cycles(std::ostream& out) {
       // If this state already has a position in our path
       if (not result.second) {
         size_t start_of_cycle = result.first->second;
+        // Output the length of the cycle
         out << end_of_path - start_of_cycle << std::endl;
+        // Write all of the states for this cycle to the file
         for (size_t i = start_of_cycle; i < end_of_path; i++) {
           model.print(path[i], out);
           known_cycle.insert(path[i]);
         }
         out << std::endl;
       }
+      // Cycles must start from their lowest point. If you ever backtrack you know
+      // this cycle was already found by someone else, or you don't need to explore it
       if (less_than(path.back(), path[0])) {
         break;
       }
