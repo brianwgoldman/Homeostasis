@@ -14,7 +14,7 @@ using std::endl;
 #include <algorithm>
 
 void WalkCycle::print(std::ostream& out) {
-  for (size_t i=0; i < cycles.size(); i++) {
+  for (size_t i = 0; i < cycles.size(); i++) {
     for (const auto & state : cycles[i]) {
       model.print(state, out);
     }
@@ -30,7 +30,7 @@ void WalkCycle::print(std::ostream& out) {
       frequency[state]++;
     }
   }
-  vector<std::pair<double, vector<int>>> sortable;
+  vector<std::pair<double, vector<int>>>sortable;
   for (const auto & pair : seen_count) {
     sortable.emplace_back(pair.second, pair.first);
     if (sortable.back().first < 100) {
@@ -65,10 +65,10 @@ bool WalkCycle::cort_cycle_check(const vector<vector<int>> & cycle) const {
 }
 
 void WalkCycle::record_edges(vector<vector<int>> & cycle) {
-  for (size_t i=0; i < cycle.size(); i++) {
+  for (size_t i = 0; i < cycle.size(); i++) {
     // Look at the transition in this cycle
     auto & from = cycle[i];
-    auto & to = cycle[(i+1) % cycle.size()];
+    auto & to = cycle[(i + 1) % cycle.size()];
     auto freq = edge_frequency.find(from);
     if (freq == edge_frequency.end()) {
       auto& in_table = edge_frequency[from];
@@ -118,7 +118,6 @@ void WalkCycle::iterate() {
   }
 }
 
-
 vector<vector<int>> WalkCycle::walk_until_cycle(const vector<int>& start) {
   vector<vector<int>> path;
   path.emplace_back(start);
@@ -131,8 +130,10 @@ vector<vector<int>> WalkCycle::walk_until_cycle(const vector<int>& start) {
       // You have reached a steady state, time to bail
       return {};
     }
+    // Create a distribution
+    std::uniform_int_distribution<size_t> dist(0, options.size() - 1);
     // pick one at random
-    size_t choice = std::uniform_int_distribution<size_t>(0, options.size() - 1)(random);
+    size_t choice = dist(random);
     path.push_back(options[choice]);
     // Stop when the new back already has a position, or if the path gets too long
   } while (path_position.count(path.back()) == 0 and path.size() < stack_limit);

@@ -17,8 +17,8 @@ using std::istringstream;
 #include <unordered_set>
 using std::unordered_set;
 
-
-int Interaction::get_direction_of_change(const vector<int>& current_states) const {
+int Interaction::get_direction_of_change(
+    const vector<int>& current_states) const {
   vector<int> activator_states;
   // TODO Currently this treats all values > 0 as activated and all values < 0 as inhibited
   // you should probably allow each variable to control that information.
@@ -39,13 +39,16 @@ int Interaction::get_direction_of_change(const vector<int>& current_states) cons
 
   // Line 3 in Equation 2
   } else if (activators.size() == 0) {
-    auto result = *std::max_element(inhibitor_states.begin(), inhibitor_states.end());
+    auto result = *std::max_element(inhibitor_states.begin(),
+                                    inhibitor_states.end());
     // Perform negation
     return -result;
   // Line 1 in Equation 2
   } else {
-    auto active_aggregate = *std::max_element(activator_states.begin(), activator_states.end());
-    auto inhibit_aggregate = *std::max_element(inhibitor_states.begin(), inhibitor_states.end());
+    auto active_aggregate = *std::max_element(activator_states.begin(),
+                                              activator_states.end());
+    auto inhibit_aggregate = *std::max_element(inhibitor_states.begin(),
+                                               inhibitor_states.end());
     // Activated is > 0
     if (active_aggregate > 0 and inhibit_aggregate <= 0) {
       return active_aggregate;
@@ -91,7 +94,8 @@ vector<int> Model::get_sync_next(const vector<int>& current_states) const {
   return result;
 }
 
-vector<vector<int>> Model::get_async_next_states(const vector<int>& current_states) const {
+vector<vector<int>> Model::get_async_next_states(
+    const vector<int>& current_states) const {
   vector<vector<int>> result;
   for (const auto & interaction : interactions) {
     int next_state = interaction.get_next_state(current_states);
@@ -104,14 +108,15 @@ vector<vector<int>> Model::get_async_next_states(const vector<int>& current_stat
   return result;
 }
 
-vector<vector<int>> Model::get_clock_next_states(const vector<int>& current_states) const {
+vector<vector<int>> Model::get_clock_next_states(
+    const vector<int>& current_states) const {
   // This is the brain
-  const unordered_set<string> brain = {"LH/FSH", "ACTH", "GnRH", "CRH"};
+  const unordered_set<string> brain = { "LH/FSH", "ACTH", "GnRH", "CRH" };
   // TODO This should probably be moved out of this function and made a part of model
   // Find the CLOCK
-  size_t clock=interactions.size();
+  size_t clock = interactions.size();
   bool brain_phase = false;
-  for (const auto& interaction: interactions) {
+  for (const auto& interaction : interactions) {
     if (interaction.target_name == "CLOCK") {
       clock = interaction.target;
       brain_phase = current_states[clock] > 0;
@@ -151,17 +156,18 @@ vector<vector<int>> Model::get_clock_next_states(const vector<int>& current_stat
 
 vector<int> Model::random_states(Random& random) const {
   vector<int> result(interactions.size(), 0);
-  for (size_t i=0; i < interactions.size(); i++) {
+  for (size_t i = 0; i < interactions.size(); i++) {
     const auto & interaction = interactions[i];
     // generate a random number between lower_bound and upper_bound (inclusive)
-    std::uniform_int_distribution<int> dist(interaction.lower_bound, interaction.upper_bound);
+    std::uniform_int_distribution<int> dist(interaction.lower_bound,
+                                            interaction.upper_bound);
     result[interaction.target] = dist(random);
   }
   return result;
 }
 
 Model::Model(string filename) {
-  if (filename.substr(filename.size()-3, 3) == "csv") {
+  if (filename.substr(filename.size() - 3, 3) == "csv") {
     std::cout << "Loading CSV" << endl;
     load_csv(filename);
   } else {
@@ -172,7 +178,7 @@ Model::Model(string filename) {
   original_ordering.resize(interactions.size());
 
   // Assign names to initial numeric positions
-  for (size_t i=0; i < interactions.size(); i++) {
+  for (size_t i = 0; i < interactions.size(); i++) {
     auto name = interactions[i].target_name;
     original_ordering[i] = name;
   }
@@ -186,7 +192,9 @@ Model::Model(string filename) {
     for (const auto name : interaction.activator_names) {
       auto result = name_to_position.find(name);
       if (result == name_to_position.end()) {
-        throw invalid_argument("Input file had " + interaction.target_name + " have activator " + name + " that has no line of its own.");
+        throw invalid_argument(
+            "Input file had " + interaction.target_name + " have activator "
+                + name + " that has no line of its own.");
       }
       interaction.activators.push_back(result->second);
       min_dep = std::min(min_dep, interaction.activators.back());
@@ -194,7 +202,9 @@ Model::Model(string filename) {
     for (const auto name : interaction.inhibitor_names) {
       auto result = name_to_position.find(name);
       if (result == name_to_position.end()) {
-        throw invalid_argument("Input file had " +interaction.target_name + " have inhibitor " + name + " that has no line of its own.");
+        throw invalid_argument(
+            "Input file had " + interaction.target_name + " have inhibitor "
+                + name + " that has no line of its own.");
       }
       interaction.inhibitors.push_back(result->second);
       min_dep = std::min(min_dep, interaction.inhibitors.back());
@@ -212,8 +222,8 @@ Model::Model(string filename) {
     }
   }
 
-  std::cout << "Unique names: " << name_to_position.size()
-            << " interactions: " << interactions.size() << std::endl;
+  std::cout << "Unique names: " << name_to_position.size() << " interactions: "
+            << interactions.size() << std::endl;
 }
 
 void Model::load_post_format(const string filename) {
@@ -264,10 +274,12 @@ void Model::load_post_format(const string filename) {
       continue;
     }
     if (index >= header_names.size()) {
-      throw invalid_argument("Input file had more rows than names in the header/ranges for variables");
+      throw invalid_argument(
+          "Input file had more rows than names in the header/ranges for variables");
     }
     if (interaction.target_name != header_names[index]) {
-      throw invalid_argument("Input file had rows in a different order than header names");
+      throw invalid_argument(
+          "Input file had rows in a different order than header names");
     }
     // ignore the =
     iss >> word;
@@ -281,7 +293,9 @@ void Model::load_post_format(const string filename) {
       } else if (behavior == "INHIBITS") {
         interaction.inhibitor_names.push_back(word);
       } else {
-        throw invalid_argument("Input file bad behavior for " + interaction.target_name + " of " + behavior);
+        throw invalid_argument(
+            "Input file bad behavior for " + interaction.target_name + " of "
+                + behavior);
       }
     }
     interaction.lower_bound = minimums[index];
@@ -337,7 +351,8 @@ void Model::load_csv(const string filename) {
 void Model::reorganize() {
   // interaction_with_remaining[X] stores the set of "interaction"s with X dependencies that don't
   // have positions yet
-  vector<unordered_set<int>> interaction_with_remaining(interactions.size() + 1, unordered_set<int>());
+  vector<unordered_set<int>> interaction_with_remaining(interactions.size() + 1,
+                                                        unordered_set<int>());
   // interaction_to_remaining[i] gives you where "i" appears in "interactions_with_remaining"
   vector<int> interaction_to_remaining(interactions.size(), -1);
   // Lookup for finding all "interactions" that depend on a given variable
@@ -390,7 +405,7 @@ void Model::reorganize() {
     // Assign all names used by interaction[i] to the highest remaining positions
     for (const string name : interaction_to_names[i]) {
       // if the bit hasn't been assigned a new position
-      auto result = name_to_position.insert({name, highest_available});
+      auto result = name_to_position.insert( { name, highest_available });
       if (result.second) {
         position_to_name[highest_available] = name;
         // Update how many dependencies all other interactions have
@@ -426,7 +441,7 @@ void Model::print_header(std::ostream& out) const {
 }
 
 void Model::print(const vector<int>& current_state, std::ostream& out) const {
-  for (size_t i=0; i < current_state.size(); i++) {
+  for (size_t i = 0; i < current_state.size(); i++) {
     string column = original_ordering[i];
     int value = current_state[name_to_position.at(column)];
     if (value >= 0) {
@@ -441,7 +456,7 @@ vector<int> Model::load_state(string line) const {
   vector<int> result(size(), 0);
   istringstream iss(line);
   int value;
-  for (size_t column=0; column < result.size(); column++) {
+  for (size_t column = 0; column < result.size(); column++) {
     string name = original_ordering[column];
     iss >> value;
     int position = name_to_position.at(name);

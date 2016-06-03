@@ -4,7 +4,8 @@
 #include "Cycles.h"
 #include <unordered_set>
 
-Cycles::Cycles(const Model& model_) : model(model_) {
+Cycles::Cycles(const Model& model_)
+    : model(model_) {
 
 }
 
@@ -26,7 +27,7 @@ bool Cycles::increment(vector<int> & current) const {
 // Helper function that returns if left < right in the sense that
 // "left" is visited before "right" by "increment"
 bool less_than(const vector<int> & left, const vector<int>& right) {
-  for (int i=left.size() - 1; i >= 0; i--) {
+  for (int i = left.size() - 1; i >= 0; i--) {
     if (left[i] < right[i]) {
       return true;
     } else if (left[i] > right[i]) {
@@ -61,7 +62,7 @@ void Cycles::find_cycles(std::ostream& out) {
       // advance the path by 1
       path.emplace_back(model.get_sync_next(path.back()));
       end_of_path++;
-      auto result = path_position.insert({path.back(), end_of_path});
+      auto result = path_position.insert( { path.back(), end_of_path });
       // If this state already has a position in our path
       if (not result.second) {
         size_t start_of_cycle = result.first->second;
@@ -80,7 +81,7 @@ void Cycles::find_cycles(std::ostream& out) {
         break;
       }
 
-    // loop as long as you haven't connected back to something we've seen before
+      // loop as long as you haven't connected back to something we've seen before
     } while (known_cycle.count(path.back()) == 0);
   } while (increment(counter));
 }

@@ -17,7 +17,12 @@ class WalkCycle {
  public:
   // stack_limit is designed to prevent excessive memory usage by stopping walks
   // if they go on too long.
-  WalkCycle(const Model& model_, Random & random_, size_t stack_limit_) : model(model_), random(random_), stack_limit(stack_limit_) { };
+  WalkCycle(const Model& model_, Random & random_, size_t stack_limit_)
+      : model(model_),
+        random(random_),
+        stack_limit(stack_limit_) {
+  }
+  ;
   // Performs a random walk until that walk loops back on itself and records
   // information about the walk. Starts either from a random state or from
   // a previous state that was part of a cycle

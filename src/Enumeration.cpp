@@ -11,7 +11,6 @@
 using std::cout;
 using std::endl;
 
-
 Enumeration::Enumeration(const Model & model_)
     : model(model_),
       length(model_.size()),
@@ -39,7 +38,8 @@ void Enumeration::make_move(size_t index, int newstate) {
     // Get get the interaction that needs to be updated now that "index" has changed
     const auto & interaction = model.get_interactions()[affected];
     if (affected != interaction.target) {
-      throw std::invalid_argument("Index mismatch between target and interaction number");
+      throw std::invalid_argument(
+          "Index mismatch between target and interaction number");
     }
     // check to see if the interaction is stable
     int desired = interaction.get_next_state(reference);
@@ -90,7 +90,7 @@ void Enumeration::rebuild_changes_needed() {
 void Enumeration::enumerate(std::ostream& out) {
   // start all variables at lower bound
   reference.resize(length);
-  for (size_t i=0; i < length; i++) {
+  for (size_t i = 0; i < length; i++) {
     reference[i] = model.get_interactions()[i].lower_bound;
   }
   rebuild_changes_needed();
@@ -131,8 +131,8 @@ void Enumeration::enumerate(std::ostream& out) {
         start = reference.size() - 150;
       }
       string magic = "-*#";
-      for (size_t i=start; i < reference.size(); i++) {
-        cout << magic[reference[i]+1];
+      for (size_t i = start; i < reference.size(); i++) {
+        cout << magic[reference[i] + 1];
       }
       cout << endl;
     }

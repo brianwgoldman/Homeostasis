@@ -6,7 +6,7 @@ using std::endl;
 #include <unordered_set>
 
 void MonteCarloCycles::print(std::ostream& out) {
-  for (size_t i=0; i < cycles.size(); i++) {
+  for (size_t i = 0; i < cycles.size(); i++) {
     // Output how many times this cycle was encountered by iteration
     out << cycle_seen[i] << endl;
     // Output each state of the cycle
@@ -21,7 +21,6 @@ void MonteCarloCycles::iterate() {
   tarjan(model.random_states(random));
 }
 
-
 bool MonteCarloCycles::tarjan(const vector<int>& start_state) {
   // Keeps track of the depth-first-search being performed by tarjan.
   vector<tarjan_container> state_stack;
@@ -32,7 +31,7 @@ bool MonteCarloCycles::tarjan(const vector<int>& start_state) {
   state_stack.emplace_back(start_state, index, model, random);
   state_to_index[start_state] = index;
   // This is used to "recurse" back up one level of the DFS
-  vector<size_t> recursion_stack = {index};
+  vector<size_t> recursion_stack = { index };
   index++;
   while (not recursion_stack.empty()) {
     // Get the tarjan_container at the top of the current stack
@@ -43,12 +42,13 @@ bool MonteCarloCycles::tarjan(const vector<int>& start_state) {
       if (state.low_link == state.index) {
         // Record the found cycle
         vector<vector<int>> cycle;
-        for (size_t i=recursion_stack.back(); i < state_stack.size(); i++) {
+        for (size_t i = recursion_stack.back(); i < state_stack.size(); i++) {
           cycle.push_back(state_stack[i].state);
         }
         cycles.push_back(cycle);
         if (cycles.back().size() > 1) {
-          std::cout << "Tarjan found a cycle over size 1: " << cycles.back().size() << endl;
+          std::cout << "Tarjan found a cycle over size 1: "
+                    << cycles.back().size() << endl;
         }
         cycle_seen.push_back(1);
         // Put all of this cycle's states into the map
@@ -89,7 +89,8 @@ bool MonteCarloCycles::tarjan(const vector<int>& start_state) {
     } else {
       // If you got here its because you just returned from a "recursion"
       // and we now need to update state's lowlink based on 'next's lowlink.
-      state.low_link = std::min(state.low_link, state_stack[known->second].low_link);
+      state.low_link = std::min(state.low_link,
+                                state_stack[known->second].low_link);
       // Warning, after this line "next" is invalid
       state.unsearched_neighbors.pop_back();
     }

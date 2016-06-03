@@ -26,9 +26,11 @@ int main(int argc, char * argv[]) {
   if (argc < 3) {
     // Help message
     cout
-        << "Usage: input_filename output_filename [tool]" << endl
+        << "Usage: input_filename output_filename [tool]"
         << endl
-        << "Example: Release/run input.txt output.txt" << endl
+        << endl
+        << "Example: Release/run input.txt output.txt"
+        << endl
         << "         This will read a problem from input.txt, write local optima to output.txt"
         << endl;
     return 0;
@@ -51,14 +53,18 @@ int main(int argc, char * argv[]) {
     Enumeration enumerate(model);
     enumerate.enumerate(out);
   } else if (option == 1) {
-    cout << "You chose option 1: Use synchronous updates and start from all states to see if they are cycles" << endl;
+    cout << "You chose option 1: Use synchronous updates and "
+         <<  "start from all states to see if they are cycles"
+         << endl;
     Cycles cycle_finder(model);
     cycle_finder.find_cycles(out);
   } else if (option == 2) {
-    cout << "You chose option 2: Using sampled Tarjan to find strongly connected components" << endl;
+    cout << "You chose option 2: Using sampled Tarjan "
+         << "to find strongly connected components"
+         << endl;
     Random random;
     MonteCarloCycles cycle_finder(model, random, 500000);
-    for (int i=0; i < 100000; i++) {
+    for (int i = 0; i < 100000; i++) {
       if (i % 1000 == 0) {
         cout << "Starting iteration: " << i << endl;
       }
@@ -66,11 +72,13 @@ int main(int argc, char * argv[]) {
     }
     cycle_finder.print(out);
   } else if (option == 3) {
-    cout << "You chose option 3: Perform random walks and record each type you get a cycle" << endl;
+    cout << "You chose option 3: Perform random walks and "
+         << "record each type you get a cycle"
+         << endl;
     Random random;
     random.seed(std::random_device()());
     WalkCycle cycle_finder(model, random, 500000);
-    for (int i=0; i < 1000000; i++) {
+    for (int i = 0; i < 1000000; i++) {
       if (i % 1000 == 0) {
         cout << "Starting iteration: " << i << endl;
       }
@@ -79,10 +87,12 @@ int main(int argc, char * argv[]) {
     cycle_finder.print(out);
   } else if (option == 4) {
     if (argc < 5) {
-      cout << "Option 4 requires another argument: the cycle input file" << endl;
+      cout << "Option 4 requires another argument: the cycle input file"
+           << endl;
       return 1;
     }
-    cout << "You chose option 4: Convert a cycle into something that can be read by GraphViz" << endl;
+    cout << "You chose option 4: Convert a cycle into the GraphViz format"
+         << endl;
     ifstream in(argv[4]);
     out << "digraph test {" << endl;
     out << "overlap=scalexy" << endl;

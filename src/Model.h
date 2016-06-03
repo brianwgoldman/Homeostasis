@@ -53,18 +53,21 @@ class Model {
   // Given a vector of states, return the result of doing a synchronous update
   vector<int> get_sync_next(const vector<int>& current_states) const;
   // Give a vector of states, return all possible states after performing an asychronous update.
-  vector<vector<int>> get_async_next_states(const vector<int>& current_states) const;
+  vector<vector<int>> get_async_next_states(
+      const vector<int>& current_states) const;
   // Given a vector of states such that "CLOCK" is an interaction,
   // return all possible asychronous updates. "CLOCK" changes only if no variables currently
   // allowed to change want to change and at least one variable not allowed to change wants to.
-  vector<vector<int>> get_clock_next_states(const vector<int>& current_states) const;
+  vector<vector<int>> get_clock_next_states(
+      const vector<int>& current_states) const;
   const size_t size() const {
     return interactions.size();
   }
   // Print out a state in the original order it was read in.
-  void print(const vector<int>& current_state, std::ostream& out=std::cout) const;
+  void print(const vector<int>& current_state,
+             std::ostream& out = std::cout) const;
   // Print out column headers for this model
-  void print_header(std::ostream& out=std::cout) const;
+  void print_header(std::ostream& out = std::cout) const;
   // Read in a state as written by "print"
   vector<int> load_state(string line) const;
   // Return the index of a variable by name, -1 if that name isn't in the model.
@@ -85,6 +88,5 @@ class Model {
   vector<string> position_to_name;
   vector<string> original_ordering;
 };
-
 
 #endif /* MODEL_H_ */
