@@ -231,13 +231,17 @@ void Model::load_post_format(const string filename) {
   string line;
   string word;
   int value;
-
+  unordered_set<string> unique_test_names;
   // Read the top line to find all of the names
   getline(input, line);
   vector<string> header_names;
   std::istringstream iss(line);
   while (iss >> word) {
     header_names.push_back(word);
+    auto result = unique_test_names.insert(word);
+    if (not result.second) {
+      throw invalid_argument("Input file header duplicates symbol: '" + word + "'");
+    }
   }
 
   // Read the second line to get the range of each variable
